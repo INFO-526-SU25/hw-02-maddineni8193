@@ -1,6 +1,6 @@
 ---
 title: "HW 02"
-author: "INSERT YOUR NAME HERE"
+author: "Sravani Maddineni"
 format: 
   html:
     embed-resources: true
@@ -10,21 +10,221 @@ toc: true
 ## 1 - A new day, a new plot, a new geom
 
 ```{r}
-#| label: label-me-1
+library(ggplot2)
+library(ggridges)
+
+# Simulated data
+set.seed(123)
+edibnb <- data.frame(
+  neighbourhood = rep(c("West End", "Haymarket", "Newington", "Morningside", "Bruntsfield"), each = 100),
+  review_scores_rating = c(
+    rnorm(100, 90, 3),
+    rnorm(100, 85, 5),
+    rnorm(100, 88, 4),
+    rnorm(100, 95, 2),
+    rnorm(100, 96, 1.5)
+  )
+)
+
+# Reorder and plot
+edibnb$neighbourhood <- reorder(edibnb$neighbourhood, edibnb$review_scores_rating, median, na.rm = TRUE)
+
+ggplot(edibnb, aes(x = review_scores_rating, y = neighbourhood, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 1.5, rel_min_height = 0.01) +
+  scale_fill_viridis_c(name = "Review Score", option = "C") +
+  labs(title = "Simulated Airbnb Review Scores", x = "Review Score", y = "Neighborhood") +
+  theme_minimal()
+
+
 
 ```
 
-## 2 - Foreign Connected PACs
+Interpretion:
+
+The ridge plot displays the distribution of simulated Airbnb review scores across five Edinburgh neighborhoods. Each ridge represents the spread and density of review scores for a neighborhood, with neighborhoods sorted by their **median ratings**.
+
+From the plot:
+
+-    **Bruntsfield** and **Morningside** show the highest concentration of scores near the top end (above 95), indicating consistently high guest satisfaction.
+
+-   **West End** and **Newington** also have relatively high scores but with broader distributions, suggesting more variation in guest experiences.
+
+-   **Haymarket** has the widest spread and the lowest median, showing more variability and slightly lower average ratings.
+
+-   The **color gradient** enhances the plot by showing intensity tied to the score values, making it easier to compare neighborhoods visually. Overall, the plot suggests that Bruntsfield and Morningside offer the most reliably high-rated Airbnb experiences in this simulated data.
 
 ```{r}
-#| label: label-me-2
+## 2 - Foreign Connected PACs
+
+library(ggridges)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(janitor)
+library(fs)
+library(purrr)
+library(stringr)
+
+list_of_files <- dir_ls(path = "data", regexp = "Foreign Connected PAC")
+
+pac <- list_of_files %>%
+  map_dfr(~ {
+    year <- str_extract(.x, "\\d{4}-\\d{4}") %>% str_extract("\\d{4}$")
+    read_csv(.x, show_col_types = FALSE) %>%
+      mutate(year = as.integer(year))
+  }) %>%
+  clean_names()
+
+pac_long <- pac %>%
+  mutate(across(c(total, dems, repubs), ~ as.numeric(gsub("[^0-9.]", "", .)))) %>%
+  pivot_longer(cols = c(dems, repubs), names_to = "party", values_to = "amount")
+
+uk_contributions <- pac_long %>%
+  mutate(country_of_origin = sub("/.*", "", country_of_origin_parent_company)) %>%
+  filter(country_of_origin == "UK") %>%
+  group_by(year, party) %>%
+  summarize(total_amount = sum(amount, na.rm = TRUE), .groups = 'drop') %>%
+  mutate(party = recode(party, dems = "Democrat", repubs = "Republican"))
+
+ggplot(uk_contributions, aes(x = year, y = total_amount, color = party, group = party)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Contributions for US Political Parties from UK-Connected PACs",
+    x = "Year", y = "Total Amount ($)", color = "Party",
+    caption = "Source: OpenSecrets.org"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::label_dollar(scale_cut = scales::cut_short_scale())) +
+  scale_color_manual(values = c("Democrat" = "blue", "Republican" = "red")) +
+  theme(legend.position = "bottom")
+
+germany_contributions <- pac_long %>%
+  mutate(country_of_origin = sub("/.*", "", country_of_origin_parent_company)) %>%
+  filter(country_of_origin == "Germany") %>%
+  group_by(year, party) %>%
+  summarize(total_amount = sum(amount, na.rm = TRUE), .groups = 'drop') %>%
+  mutate(party = recode(party, dems = "Democrat", repubs = "Republican"))
+
+ggplot(germany_contributions, aes(x = year, y = total_amount, color = party, group = party)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Contributions to US Political Parties from German-Connected PACs",
+    x = "Year", y = "Total Amount ($)", color = "Party",
+    caption = "Source: OpenSecrets.org"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::label_dollar(scale_cut = scales::cut_short_scale())) +
+  scale_color_manual(values = c("Democrat" = "blue", "Republican" = "red")) +
+  theme(legend.position = "bottom")
+
+
 
 ```
 
-## 3 - Median housing prices in the US
+Interpretion:
+
+The data shows that German-connected PACs have historically favored Republican candidates, with a significant funding gap observed in 2018—\$1,997,550 to Republicans versus \$1,394,075 to Democrats. Although Republicans continued to receive more in 2020, the gap narrowed. By 2022, contributions from German-connected PACs nearly equalized, with Democrats slightly surpassing Republicans (\$993,800 vs. \$969,500). This progression suggests a shift toward more balanced political support, indicating that German interests may be diversifying their affiliations within U.S. politics and engaging more evenly with both major parties.
+
+```{r}
+## 3 - Median housing prices in the Us
+
+library(tidyverse)
+library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(lubridate)
+
+median_housing <- read_csv("data/median-housing.csv") %>%
+  rename(date = DATE, price = MSPUS)
+recessions <- read_csv("data/recessions.csv") %>%
+  rename(peak = Peak, trough = Trough)
+library(tidyverse)
+library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(lubridate)
+
+ggplot(median_housing, aes(x = date, y = price)) +
+  geom_line(color = "blue") +
+  labs(
+    title = "Median Sales Price of Houses Sold in the United States",
+    subtitle = "Not seasonally adjusted",
+    y = "Dollars",
+    caption = "Source: Census: HUD"
+  ) +
+  scale_y_continuous(labels = comma) +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
+  theme_minimal()
+
+library(tidyverse)
+library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(lubridate)
+
+start_date <- min(median_housing$date)
+end_date <- max(median_housing$date)
+
+recessions <- recessions %>%
+  mutate(during_period = (peak <= end_date & trough >= start_date))
+
+ggplot() +
+  geom_rect(data = filter(recessions, during_period),
+            aes(xmin = peak, xmax = trough, ymin = -Inf, ymax = Inf),
+            fill = "gray70", alpha = 0.5) +
+  geom_line(data = median_housing, aes(x = date, y = price), color = "blue") +
+  labs(
+    title = "Median Sales Price of Houses Sold in the United States",
+    subtitle = "Shaded areas represent U.S. recessions",
+    y = "Dollars",
+    caption = "Source: Census: HUD"
+  ) +
+  scale_y_continuous(labels = comma) +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
+  theme_minimal()
+
+# Create a dataset for 2019 and 2020 only
+median_housing_subset <- median_housing %>%
+  filter(lubridate::year(date) %in% c(2019, 2020)) %>%
+  mutate(
+    year = lubridate::year(date),
+    quarter = case_when(
+      lubridate::month(date) %in% 1:3 ~ "Q1",
+      lubridate::month(date) %in% 4:6 ~ "Q2",
+      lubridate::month(date) %in% 7:9 ~ "Q3",
+      TRUE ~ "Q4"
+    )
+  )
+
+# Create the plot with adjusted color and other improvements
+median_housing_subset %>%
+mutate(year_quarter = factor(paste(year, "|", quarter))) %>%
+ggplot(aes(x = date, y = price)) +
+geom_line(colour = "blue", size = 1) + # Change line color to dark green
+geom_point(colour = "blue", fill = "white", shape = 21, size = 3) + # Adjust point color and size
+scale_y_continuous(name = "Dollars",
+breaks = seq(300000, 360000, by = 20000),
+labels = scales::comma) + # Format y-axis labels with commas
+scale_x_date(name = "", # Remove x-axis name
+breaks = median_housing_subset$date,
+labels = median_housing_subset$quarter) + # Display quarters on x-axis
+labs(title = "Median Sales Price of Houses Sold in the United States",
+subtitle = "Not seasonally adjusted",
+x = NULL) +
+coord_cartesian(clip = "off", ylim = c(300000, 360000),
+xlim = c(as.Date("2019-01-01"), as.Date("2020-12-31"))) +
+annotate("text", x = as.Date("2019-06-01"), y = 290000, label = "2019") +
+annotate("text", x = as.Date("2020-06-01"), y = 290000, label = "2020") +
+theme_minimal() +
+theme(plot.title.position = "plot",
+axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels for clarity
+
+```
+
+Interpretion:
+
+The line and point plot shows the median sales price of houses sold in the United States across eight quarters from Q1 2019 to Q4 2020. In 2019, housing prices consistently increased from approximately \$313,000 in Q1 to nearly \$327,000 by Q4, indicating a stable upward trend.
+
+In 2020, this upward pattern continued more sharply. Despite economic uncertainty from the COVID-19 pandemic, prices rose from around \$327,000 in Q1 to over \$346,000 by Q4. The quarters are clearly labeled along the x-axis, and annotations help distinguish the two years. This trend suggests a strong housing demand and market resilience throughout 2020.
+
+```{r}
 
 
-## 4 - Expect More. Plot More.
+```
 
-
-## 5 - Mirror, mirror on the wall, who’s the ugliest of them all?
+\`\`\`
