@@ -223,8 +223,42 @@ The line and point plot shows the median sales price of houses sold in the Unite
 In 2020, this upward pattern continued more sharply. Despite economic uncertainty from the COVID-19 pandemic, prices rose from around \$327,000 in Q1 to over \$346,000 by Q4. The quarters are clearly labeled along the x-axis, and annotations help distinguish the two years. This trend suggests a strong housing demand and market resilience throughout 2020.
 
 ```{r}
+## 4 - Expect More. plot More.
 
+library(ggplot2)
+library(tibble)
+
+# Create concentric circles as data
+data <- tibble(
+  x = rep(0, 3),
+  y = rep(0, 3),
+  size = c(30, 20, 10),  # circle sizes (outer to inner)
+  color = c("red", "white", "red")  # fill colors
+)
+
+ggplot() +
+  geom_point(
+    data = data,
+    aes(x = x, y = y, size = size, color = color),
+    shape = 21,
+    fill = data$color,
+    stroke = 0
+  ) +
+  scale_size_identity() +              
+  scale_color_identity() +          
+  theme_void() +                      
+  coord_fixed() +         
+  xlim(-35, 35) +
+  ylim(-55, 55) +
+  annotate("text", x = -3, y = -35, label = "TARGET", size = 8, color = "red", fontface = "bold") +
+  annotate("text", x = 16, y = -38, label = "®", size = 6, color = "red")  # Registered trademark symbol
 
 ```
 
-\`\`\`
+Interpretion:
+
+This code creates a simple version of the Target store logo using R's `ggplot2` package. It draws three concentric circles centered at the same point, with sizes and colors arranged as red (outer), white (middle), and red (inner) to mimic the Target symbol. The `geom_point()` function is used to plot these circles, and `theme_void()` removes all axes and backgrounds to keep the focus on the shapes. The `coord_fixed()` function ensures the circles stay perfectly round. Additionally, the plot adds bold red text that says "TARGET" and a small red "®" to simulate the registered trademark, completing the logo-like appearance.
+
+```{r}
+
+```
