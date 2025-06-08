@@ -29,11 +29,12 @@ edibnb <- data.frame(
 # Reorder and plot
 edibnb$neighbourhood <- reorder(edibnb$neighbourhood, edibnb$review_scores_rating, median, na.rm = TRUE)
 
-ggplot(edibnb, aes(x = review_scores_rating, y = neighbourhood, fill = ..x..)) +
+ggplot(edibnb, aes(x = review_scores_rating, y = neighbourhood, fill = after_stat(x))) +
   geom_density_ridges_gradient(scale = 1.5, rel_min_height = 0.01) +
   scale_fill_viridis_c(name = "Review Score", option = "C") +
   labs(title = "Simulated Airbnb Review Scores", x = "Review Score", y = "Neighborhood") +
   theme_minimal()
+
 
 
 
@@ -45,7 +46,7 @@ The ridge plot displays the distribution of simulated Airbnb review scores acros
 
 From the plot:
 
--    **Bruntsfield** and **Morningside** show the highest concentration of scores near the top end (above 95), indicating consistently high guest satisfaction.
+-   **Bruntsfield** and **Morningside** show the highest concentration of scores near the top end (above 95), indicating consistently high guest satisfaction.
 
 -   **West End** and **Newington** also have relatively high scores but with broader distributions, suggesting more variation in guest experiences.
 
@@ -130,7 +131,7 @@ The data shows that German-connected PACs have historically favored Republican c
 ## 3 - Median housing prices in the Us
 
 library(tidyverse)
-library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(scales)   
 library(lubridate)
 
 median_housing <- read_csv("data/median-housing.csv") %>%
@@ -138,7 +139,7 @@ median_housing <- read_csv("data/median-housing.csv") %>%
 recessions <- read_csv("data/recessions.csv") %>%
   rename(peak = Peak, trough = Trough)
 library(tidyverse)
-library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(scales)   
 library(lubridate)
 
 ggplot(median_housing, aes(x = date, y = price)) +
@@ -154,7 +155,7 @@ ggplot(median_housing, aes(x = date, y = price)) +
   theme_minimal()
 
 library(tidyverse)
-library(scales)   # ✅ Add this to fix the 'comma' not found error
+library(scales)   
 library(lubridate)
 
 start_date <- min(median_housing$date)
@@ -260,5 +261,51 @@ Interpretion:
 This code creates a simple version of the Target store logo using R's `ggplot2` package. It draws three concentric circles centered at the same point, with sizes and colors arranged as red (outer), white (middle), and red (inner) to mimic the Target symbol. The `geom_point()` function is used to plot these circles, and `theme_void()` removes all axes and backgrounds to keep the focus on the shapes. The `coord_fixed()` function ensures the circles stay perfectly round. Additionally, the plot adds bold red text that says "TARGET" and a small red "®" to simulate the registered trademark, completing the logo-like appearance.
 
 ```{r}
+## 5 - Mirror, mirror on the wall, who's the ugliest of them all?
+
+# Load required libraries
+library(ggplot2)
+library(palmerpenguins)
+# Basic plot with custom colors and styling
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+geom_point(size = 3) +
+labs(title = "Flipper Length vs Penguin Body Mass",
+x = "Flipper Length (mm)",
+y = "Body Mass (g)") +
+scale_color_manual(values = c("Adelie" = "#FF6347", "Chinstrap" = "#4682B4", "Gentoo" = "#32CD32")) + theme_minimal() +
+theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+axis.title = element_text(size = 12),
+axis.text = element_text(size = 10))
+
+# Load required libraries
+library(ggplot2)
+library(palmerpenguins)
+# Plot with updated colors
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+geom_point(size = 10, alpha = 0.7) +
+labs(title = "Most Awful Plot Ever",
+x = "FLIPPERS?",
+y = "MASSIVE WEIGHT") +
+theme(
+panel.background = element_rect(fill = "yellow", color = "black"), # Subtle background
+plot.title = element_text(size = 20, face = "bold", color = "darkblue"),
+windowsFonts(Times = windowsFont("Times New Roman")),
+axis.title.x = element_text(size = 15, angle = 45, hjust = 1),
+axis.title.y = element_text(size = 15, angle = -45, hjust = 1),
+axis.text = element_text(size = 14, color = "black", face = "italic"),
+legend.position = "bottom",
+legend.text = element_text(size = 10, face = "bold", color = "black"),
+legend.title = element_text(size = 12, face = "italic")
+) +
+scale_color_manual(values = c("Adelie" = "#1f77b4", "Chinstrap" = "#ff7f0e", "Gentoo" = "#2ca02c")) +
+theme(legend.background = element_rect(fill = "purple"))
+
+
 
 ```
+
+Description:
+
+In this task, I started by creating a basic scatter plot using the penguins dataset to explore the relationship between flipper length and body mass. I kept the plot simple and clean by using the default theme and color scales for clarity.
+Next, I intentionally transformed the plot into an exaggerated, visually jarring version by applying bright, clashing colors, and unconventional design choices. I experimented with bold background colors, adjusted text sizes and angles to make the plot more complex, and chose discordant color schemes for the points and legend. These changes aimed to push the boundaries of visual aesthetics and showcase how ggplot2 can be manipulated to create highly unconventional and over-the-top designs.
+The goal was not just to display the data but to explore the extremes of plot customization, highlighting the flexibility of ggplot2 in creating both clean and strikingly unconventional visualizations.
