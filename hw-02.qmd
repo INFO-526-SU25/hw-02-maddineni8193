@@ -4,6 +4,11 @@ author: "Sravani Maddineni"
 format: 
   html:
     embed-resources: true
+execute:
+  warning: false
+  message: false
+  error: false
+
 toc: true
 ---
 
@@ -138,9 +143,7 @@ median_housing <- read_csv("data/median-housing.csv") %>%
   rename(date = DATE, price = MSPUS)
 recessions <- read_csv("data/recessions.csv") %>%
   rename(peak = Peak, trough = Trough)
-library(tidyverse)
-library(scales)   
-library(lubridate)
+
 
 ggplot(median_housing, aes(x = date, y = price)) +
   geom_line(color = "blue") +
@@ -153,10 +156,6 @@ ggplot(median_housing, aes(x = date, y = price)) +
   scale_y_continuous(labels = comma) +
   scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
   theme_minimal()
-
-library(tidyverse)
-library(scales)   
-library(lubridate)
 
 start_date <- min(median_housing$date)
 end_date <- max(median_housing$date)
@@ -182,15 +181,17 @@ ggplot() +
 # Create a dataset for 2019 and 2020 only
 median_housing_subset <- median_housing %>%
   filter(lubridate::year(date) %in% c(2019, 2020)) %>%
-  mutate(
-    year = lubridate::year(date),
-    quarter = case_when(
-      lubridate::month(date) %in% 1:3 ~ "Q1",
-      lubridate::month(date) %in% 4:6 ~ "Q2",
-      lubridate::month(date) %in% 7:9 ~ "Q3",
-      TRUE ~ "Q4"
-    )
+
+ mutate(
+  year = lubridate::year(date),
+  quarter = case_when(
+    lubridate::month(date) %in% 1:3 ~ "Q1",
+    lubridate::month(date) %in% 4:6 ~ "Q2",
+    lubridate::month(date) %in% 7:9 ~ "Q3",
+    TRUE ~ "Q4"
   )
+)
+
 
 # Create the plot with adjusted color and other improvements
 median_housing_subset %>%
@@ -198,9 +199,12 @@ mutate(year_quarter = factor(paste(year, "|", quarter))) %>%
 ggplot(aes(x = date, y = price)) +
 geom_line(colour = "blue", size = 1) + # Change line color to dark green
 geom_point(colour = "blue", fill = "white", shape = 21, size = 3) + # Adjust point color and size
-scale_y_continuous(name = "Dollars",
-breaks = seq(300000, 360000, by = 20000),
-labels = scales::comma) + # Format y-axis labels with commas
+scale_y_continuous(
+  name = "Dollars",
+  breaks = seq(300000, 360000, by = 20000),
+  labels = scales::comma
+) +
+
 scale_x_date(name = "", # Remove x-axis name
 breaks = median_housing_subset$date,
 labels = median_housing_subset$quarter) + # Display quarters on x-axis
@@ -306,6 +310,4 @@ theme(legend.background = element_rect(fill = "purple"))
 
 Description:
 
-In this task, I started by creating a basic scatter plot using the penguins dataset to explore the relationship between flipper length and body mass. I kept the plot simple and clean by using the default theme and color scales for clarity.
-Next, I intentionally transformed the plot into an exaggerated, visually jarring version by applying bright, clashing colors, and unconventional design choices. I experimented with bold background colors, adjusted text sizes and angles to make the plot more complex, and chose discordant color schemes for the points and legend. These changes aimed to push the boundaries of visual aesthetics and showcase how ggplot2 can be manipulated to create highly unconventional and over-the-top designs.
-The goal was not just to display the data but to explore the extremes of plot customization, highlighting the flexibility of ggplot2 in creating both clean and strikingly unconventional visualizations.
+In this task, I started by creating a basic scatter plot using the penguins dataset to explore the relationship between flipper length and body mass. I kept the plot simple and clean by using the default theme and color scales for clarity. Next, I intentionally transformed the plot into an exaggerated, visually jarring version by applying bright, clashing colors, and unconventional design choices. I experimented with bold background colors, adjusted text sizes and angles to make the plot more complex, and chose discordant color schemes for the points and legend. These changes aimed to push the boundaries of visual aesthetics and showcase how ggplot2 can be manipulated to create highly unconventional and over-the-top designs. The goal was not just to display the data but to explore the extremes of plot customization, highlighting the flexibility of ggplot2 in creating both clean and strikingly unconventional visualizations.
