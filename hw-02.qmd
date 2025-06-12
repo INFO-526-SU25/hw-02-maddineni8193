@@ -170,7 +170,7 @@ ggplot() +
   geom_line(data = median_housing, aes(x = date, y = price), color = "blue") +
   labs(
     title = "Median Sales Price of Houses Sold in the United States",
-    subtitle = "Shaded areas represent U.S. recessions",
+    subtitle = "Not seasonally adjusted",
     y = "Dollars",
     caption = "Source: Census: HUD"
   ) +
