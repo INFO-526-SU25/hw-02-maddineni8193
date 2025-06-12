@@ -105,6 +105,7 @@ ggplot(uk_contributions, aes(x = year, y = total_amount, color = party, group = 
   scale_color_manual(values = c("Democrat" = "blue", "Republican" = "red")) +
   theme(legend.position = "bottom")
 
+# Germany Plot
 germany_contributions <- pac_long %>%
   mutate(country_of_origin = sub("/.*", "", country_of_origin_parent_company)) %>%
   filter(country_of_origin == "Germany") %>%
@@ -123,7 +124,6 @@ ggplot(germany_contributions, aes(x = year, y = total_amount, color = party, gro
   scale_y_continuous(labels = scales::label_dollar(scale_cut = scales::cut_short_scale())) +
   scale_color_manual(values = c("Democrat" = "blue", "Republican" = "red")) +
   theme(legend.position = "bottom")
-
 
 
 ```
